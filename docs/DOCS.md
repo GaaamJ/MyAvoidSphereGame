@@ -11,5 +11,6 @@
 ## 추가 도전
 
 1. [개선 1차: 재시작](update-1-restart.md) - Game Over 후 R로 다시 시작
+2. [개선 2차: 블록 쌓고 올라가기](update-2-blocks.md) - 테트리미노 블록, 점프, 높이 점수, 낙하 알고리즘
 
 [← README로](../README.md)

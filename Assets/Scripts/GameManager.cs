@@ -3,22 +3,25 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-// 생존시간 측정, UI 표시, Game Over 상태와 재시작을 관리한다.
+// 생존시간·높이 표시, Game Over 상태와 재시작을 관리한다.
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [SerializeField] private TextMeshProUGUI survivalTimeText;
+    [SerializeField] private TextMeshProUGUI heightText;
     [SerializeField] private GameObject gameOverPanel;
 
     public bool IsGameOver { get; private set; }
     public float SurvivalTime { get; private set; }
+    public int Height { get; private set; }
 
     void Awake()
     {
         Instance = this;
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
+        UpdateHeightText();
     }
 
     void Update()
@@ -33,6 +36,14 @@ public class GameManager : MonoBehaviour
 
         SurvivalTime += Time.deltaTime;
         UpdateTimeText();
+    }
+
+    public void SetHeight(int height)
+    {
+        if (IsGameOver || height == Height) return;
+
+        Height = height;
+        UpdateHeightText();
     }
 
     public void GameOver()
@@ -55,5 +66,11 @@ public class GameManager : MonoBehaviour
     {
         if (survivalTimeText != null)
             survivalTimeText.text = $"Time: {SurvivalTime:F1}s";
+    }
+
+    void UpdateHeightText()
+    {
+        if (heightText != null)
+            heightText.text = $"Height: {Height}";
     }
 }
