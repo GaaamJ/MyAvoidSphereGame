@@ -17,10 +17,6 @@ Claude Code와 Unity MCP를 이용해 AI와 함께 만들었고, 처음에는 �
 - 떨어지는 중인 블록에 닿으면 Game Over입니다.
 - 좌상단 `Height`가 점수입니다 (지금 서 있는 높이).
 
-## 실행
-
-Unity 6000.3.26f1 (URP)로 열고 `Assets/Scenes/SampleScene`을 실행합니다.
-
 ## 문서
 
 작업 과정, 스크린샷, 코드 리뷰는 [docs/DOCS.md](docs/DOCS.md)에 있습니다.
