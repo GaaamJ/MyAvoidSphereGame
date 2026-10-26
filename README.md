@@ -1,7 +1,7 @@
 # StackClimb
 
-떨어지는 테트리미노 블록을 피하면서, 쌓인 블록을 밟고 최대한 높이 올라가는 Unity 프로토타입.
-Claude Code + Unity MCP로 AI와 같이 만들어 봤다. 처음엔 공 피하기 게임이었다.
+떨어지는 테트리미노 블록을 피하면서, 쌓인 블록을 밟고 최대한 높이 올라가는 Unity 프로토타입입니다.
+Claude Code와 Unity MCP를 이용해 AI와 함께 만들었고, 처음에는 공 피하기 게임이었습니다.
 
 ![플레이 화면](docs/images/09-climbed-height.png)
 
@@ -12,15 +12,15 @@ Claude Code + Unity MCP로 AI와 같이 만들어 봤다. 처음엔 공 피하�
 
 ## 규칙
 
-- 블록이 10×10 칸에 맞춰 떨어지고, 떨어진 자리에 그대로 쌓인다
-- 떨어질 자리는 빨간 외곽선으로 미리 보여준다
-- 떨어지는 중인 블록에 닿으면 Game Over
-- 좌상단 `Height`가 점수 (지금 서 있는 높이)
+- 블록은 10×10 칸에 맞춰 떨어지고, 떨어진 자리에 그대로 쌓입니다.
+- 떨어질 자리는 빨간 외곽선으로 미리 보여 줍니다.
+- 떨어지는 중인 블록에 닿으면 Game Over입니다.
+- 좌상단 `Height`가 점수입니다 (지금 서 있는 높이).
 
 ## 실행
 
-Unity 6000.3.26f1 (URP)로 열고 `Assets/Scenes/SampleScene` 실행.
+Unity 6000.3.26f1 (URP)로 열고 `Assets/Scenes/SampleScene`을 실행합니다.
 
 ## 문서
 
-작업 과정, 스크린샷, 코드 리뷰는 [docs/DOCS.md](docs/DOCS.md) 참조.
+작업 과정, 스크린샷, 코드 리뷰는 [docs/DOCS.md](docs/DOCS.md)에 있습니다.
