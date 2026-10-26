@@ -23,5 +23,4 @@ Unity 6000.3.26f1 (URP)로 열고 `Assets/Scenes/SampleScene` 실행.
 
 ## 문서
 
-작업 과정, 스크린샷, 코드 리뷰는 [docs/DOCS.md](docs/DOCS.md)에 있음.
-Obsidian에서 보려면 이 폴더를 vault로 열면 된다.
+작업 과정, 스크린샷, 코드 리뷰는 [docs/DOCS.md](docs/DOCS.md) 참조.
