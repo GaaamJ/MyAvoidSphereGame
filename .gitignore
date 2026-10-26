@@ -35,6 +35,9 @@
 *.pdb.meta
 *.mdb.meta
 
+# Obsidian vault settings
+.obsidian/
+
 # OS
 .DS_Store
 Thumbs.db

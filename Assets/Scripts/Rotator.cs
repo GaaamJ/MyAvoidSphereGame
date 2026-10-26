@@ -4,7 +4,7 @@ using UnityEngine;
 public class Rotator : MonoBehaviour
 {
     [Tooltip("초당 회전 각도 (도)")]
-    public float rotationSpeed = 90f;
+    [SerializeField] private float rotationSpeed = 90f;
 
     void Update()
     {

@@ -6,10 +6,10 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Tooltip("이동 속도 (m/s)")]
-    public float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed = 5f;
 
     [Tooltip("이동 가능 범위 (Ground 중심 기준 반경, X/Z)")]
-    public float boundary = 4.5f;
+    [SerializeField] private float boundary = 4.5f;
 
     Rigidbody rb;
     Vector3 moveInput;

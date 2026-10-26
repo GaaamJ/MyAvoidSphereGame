@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public TextMeshProUGUI survivalTimeText;
+    [SerializeField] private TextMeshProUGUI survivalTimeText;
 
     public bool IsGameOver { get; private set; }
     public float SurvivalTime { get; private set; }
