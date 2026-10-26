@@ -4,7 +4,6 @@
 Claude Code와 Unity MCP를 이용해 AI와 함께 만들었고, 처음에는 공 피하기 게임이었습니다.
 
 **[브라우저에서 플레이하기](https://gaaamj.github.io/StackClimb/)** (PC 크롬·엣지 권장, 게임 화면을 한 번 클릭한 뒤 조작)
-// 5차 프로토타이핑 이후, 빌드 오류로 현재 실행 불가. 추후 수정 예정.
 
 ![플레이 화면](docs/images/09-climbed-height.png)
 
