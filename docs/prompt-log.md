@@ -118,6 +118,16 @@
 - 위 기록에 나오는 옛 이름(`MyAvoidSphereGame`)은 그때 사실이라 그대로 둠
 - 로컬 폴더 이름은 안 바꿈. Unity가 열려 있는 상태라 바꾸면 에디터, MCP 연결이 다 끊김
 
+## 7. Game Over 연출
+
+**프롬프트**
+
+> 프로젝트 이름 바꾸고 나면 game over 시 모든 block이 rotator로 rotate하게 해 주셈 재밌잖어
+
+**Claude가 한 일**
+
+- Game Over 때 모든 블록에 `Rotator` 추가. 자세한 건 [개선 2차](update-2-blocks.md)
+
 ## 중간에 막혔던 것
 
 | 상황 | 원인 | 해결 |

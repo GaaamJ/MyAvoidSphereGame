@@ -54,6 +54,10 @@ public class GameManager : MonoBehaviour
         UpdateTimeText();
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
+
+        foreach (FallingBlock block in FindObjectsByType<FallingBlock>(FindObjectsSortMode.None))
+            block.Spin();
+
         Debug.Log("Game Over");
     }
 

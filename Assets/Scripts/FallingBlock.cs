@@ -115,6 +115,15 @@ public class FallingBlock : MonoBehaviour
         markerMaterial.color = new Color(1f, 1f, 1f, alpha);
     }
 
+    // Game Over 연출: 제자리에서 빙글빙글 돈다
+    public void Spin()
+    {
+        // 보간이 켜져 있으면 Rotator가 바꾼 회전을 Rigidbody가 덮어쓴다
+        rb.interpolation = RigidbodyInterpolation.None;
+        if (GetComponent<Rotator>() == null)
+            gameObject.AddComponent<Rotator>();
+    }
+
     void Land()
     {
         state = State.Landed;
