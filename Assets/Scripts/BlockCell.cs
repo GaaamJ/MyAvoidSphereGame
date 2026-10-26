@@ -60,6 +60,9 @@ public class BlockCell : MonoBehaviour, IFallingHazard
             pos.y = targetY;
             falling = false;
             rb.MovePosition(pos);
+            // 쪼개진 한 칸이라 블록 착지보다 약하게
+            if (LandingEffects.Instance != null)
+                LandingEffects.Instance.PlayLanding(new[] { pos + Vector3.down * 0.5f }, 0.5f);
             onSettled?.Invoke();
             return;
         }

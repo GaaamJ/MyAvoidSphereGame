@@ -29,9 +29,22 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.3f;
     [SerializeField] private float groundCheckDistance = 0.15f;
 
+    [Header("찌그러짐")]
+    [Tooltip("보이는 캡슐 (콜라이더는 그대로 두고 이것만 늘이고 줄인다)")]
+    [SerializeField] private Transform visual;
+    [Tooltip("점프할 때 모양 (가로, 세로)")]
+    [SerializeField] private Vector2 jumpStretch = new Vector2(0.8f, 1.25f);
+    [Tooltip("착지할 때 모양 (가로, 세로)")]
+    [SerializeField] private Vector2 landSquash = new Vector2(1.25f, 0.75f);
+    [Tooltip("이 속도보다 빠르게 떨어지다 착지하면 찌그러짐")]
+    [SerializeField] private float squashMinFallSpeed = 2f;
+    [Tooltip("원래 모양으로 돌아오는 빠르기")]
+    [SerializeField] private float squashRecover = 12f;
+
     Rigidbody rb;
     CapsuleCollider capsule;
     Vector2 moveInput;
+    Vector3 visualScale = Vector3.one;
     float lastGroundedTime = -1f;
     float lastJumpPressedTime = -1f;
     bool isGrounded;
@@ -49,6 +62,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        UpdateVisual();
+
         moveInput = Vector2.zero;
         if (isDead) return;
 
@@ -69,7 +84,12 @@ public class PlayerController : MonoBehaviour
     {
         if (isDead) return;
 
+        bool wasGrounded = isGrounded;
+        float fallSpeed = -rb.linearVelocity.y;
         CheckGround();
+        if (isGrounded && !wasGrounded && fallSpeed > squashMinFallSpeed)
+            SetVisualShape(landSquash);
+
         Move();
         Jump();
         ApplyExtraGravity();
@@ -111,9 +131,26 @@ public class PlayerController : MonoBehaviour
         float jumpVelocity = Mathf.Sqrt(2f * -Physics.gravity.y * jumpHeight);
         Vector3 v = rb.linearVelocity;
         rb.linearVelocity = new Vector3(v.x, jumpVelocity, v.z);
+        SetVisualShape(jumpStretch);
 
         lastJumpPressedTime = -1f;
         lastGroundedTime = -1f;
+    }
+
+    void SetVisualShape(Vector2 shape)
+    {
+        visualScale = new Vector3(shape.x, shape.y, shape.x);
+    }
+
+    // 모양을 원래대로 되돌리면서, 발바닥이 바닥에 붙어 있도록 위치를 보정한다
+    void UpdateVisual()
+    {
+        if (visual == null) return;
+
+        visualScale = Vector3.Lerp(visualScale, Vector3.one, 1f - Mathf.Exp(-squashRecover * Time.deltaTime));
+        visual.localScale = visualScale;
+        float halfHeight = capsule.height * 0.5f;
+        visual.localPosition = new Vector3(0f, -(1f - visualScale.y) * halfHeight, 0f);
     }
 
     void ApplyExtraGravity()

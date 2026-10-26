@@ -12,21 +12,30 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
     [Tooltip("블록을 이루는 칸 (pivot 칸 기준, x/z)")]
     [SerializeField] private Vector2Int[] shapeCells;
 
-    [Tooltip("낙하 가속도")]
-    [SerializeField] private float gravity = 25f;
+    [Header("낙하")]
+    [Tooltip("떨어지기 시작해서 착지할 때까지 걸리는 시간 (초). 높이와 상관없이 일정")]
+    [SerializeField] private float fallDuration = 0.9f;
+    [Tooltip("낙하 곡선 지수. 클수록 처음엔 느리고 끝에서 빠름 (1이면 일정 속도)")]
+    [SerializeField] private float fallCurvePower = 3f;
 
-    [Tooltip("최대 낙하 속도")]
+    [Header("쪼개진 칸 낙하")]
+    [Tooltip("쪼개진 칸의 낙하 가속도")]
+    [SerializeField] private float gravity = 25f;
+    [Tooltip("쪼개진 칸의 최대 낙하 속도")]
     [SerializeField] private float maxFallSpeed = 18f;
 
     Rigidbody rb;
     FieldGrid field;
     GameObject marker;
-    Material markerMaterial;
+    Mesh markerMesh;
     Vector2Int[] cells;
     State state;
+    float startY;
     float landY;
     float warnTimer;
-    float fallSpeed;
+    float fallTimer;
+    float markerElapsed;
+    float markerDuration;
     int landingLevel;
     int fallingCellCount;
 
@@ -61,13 +70,13 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
     {
         this.field = field;
         this.landingLevel = landingLevel;
-        this.markerMaterial = markerMaterial;
 
         Vector2Int[] rotated = RotateCells(shapeCells, rotationSteps);
         cells = new Vector2Int[rotated.Length];
         for (int i = 0; i < rotated.Length; i++)
             cells[i] = originCell + rotated[i];
 
+        startY = spawnY;
         landY = landingLevel * field.CellSize + field.CellSize * 0.5f;
         transform.SetPositionAndRotation(
             field.CellToWorld(originCell) + Vector3.up * spawnY,
@@ -76,8 +85,9 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
         rb.rotation = transform.rotation;
 
         warnTimer = warnTime;
+        markerDuration = warnTime + fallDuration;
         state = State.Warning;
-        CreateMarker();
+        CreateMarker(markerMaterial);
     }
 
     void FixedUpdate()
@@ -92,29 +102,23 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
 
         if (state != State.Falling) return;
 
-        fallSpeed = Mathf.Min(fallSpeed + gravity * Time.fixedDeltaTime, maxFallSpeed);
+        // 총 낙하 시간은 일정하게, 처음엔 느리고 끝에서 빠르게 (ease-in)
+        fallTimer += Time.fixedDeltaTime;
+        float t = Mathf.Clamp01(fallTimer / fallDuration);
         Vector3 pos = rb.position;
-        pos.y -= fallSpeed * Time.fixedDeltaTime;
-
-        if (pos.y <= landY)
-        {
-            pos.y = landY;
-            rb.MovePosition(pos);
-            Land();
-            return;
-        }
+        pos.y = Mathf.Lerp(startY, landY, Mathf.Pow(t, fallCurvePower));
         rb.MovePosition(pos);
+
+        if (t >= 1f)
+            Land();
     }
 
     void Update()
     {
         if (marker == null) return;
 
-        // 착지가 가까울수록 빠르게 깜빡인다
-        float distance = Mathf.Max(0f, transform.position.y - landY);
-        float speed = Mathf.Lerp(18f, 5f, Mathf.Clamp01(distance / 10f));
-        float alpha = Mathf.Lerp(0.55f, 1f, (Mathf.Sin(Time.time * speed) + 1f) * 0.5f);
-        markerMaterial.color = new Color(1f, 1f, 1f, alpha);
+        markerElapsed += Time.deltaTime;
+        BuildMarkerMesh(Mathf.Clamp01(markerElapsed / markerDuration));
     }
 
     // Game Over 연출: 제자리에서 빙글빙글 돈다
@@ -134,12 +138,19 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
         // 칸마다 실제로 멈출 층. 밑이 비어 있으면 landingLevel보다 낮다.
         int[] cellLevels = new int[cells.Length];
         bool hasGap = false;
+        var landedBottoms = new List<Vector3>();
         for (int i = 0; i < cells.Length; i++)
         {
             cellLevels[i] = field.GetHeight(cells[i]);
-            if (cellLevels[i] < landingLevel) hasGap = true;
+            if (cellLevels[i] < landingLevel)
+                hasGap = true;
+            else
+                landedBottoms.Add(field.CellToWorld(cells[i]) + Vector3.up * (landY - field.CellSize * 0.5f));
             field.OccupyCell(cells[i], cellLevels[i]);
         }
+
+        if (LandingEffects.Instance != null)
+            LandingEffects.Instance.PlayLanding(landedBottoms, 1f);
 
         if (hasGap)
             SplitIntoCells(cellLevels);
@@ -185,20 +196,35 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
     void DestroyMarker()
     {
         if (marker == null) return;
-        Destroy(marker.GetComponent<MeshFilter>().sharedMesh);
-        Destroy(markerMaterial);
+        Destroy(markerMesh);
         Destroy(marker);
         marker = null;
     }
 
-    // 착지할 칸에 반투명 그림자 + 빨간 외곽선 메시를 만든다
-    void CreateMarker()
+    void CreateMarker(Material material)
+    {
+        markerMesh = new Mesh { name = "LandingMarker" };
+        markerMesh.MarkDynamic();
+
+        marker = new GameObject("LandingMarker");
+        marker.AddComponent<MeshFilter>().sharedMesh = markerMesh;
+        var mr = marker.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = material;
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        mr.receiveShadows = false;
+
+        BuildMarkerMesh(0f);
+    }
+
+    // 착지할 칸에 빨간 외곽선 + 남은 시간만큼 차오르는 그림자
+    void BuildMarkerMesh(float progress)
     {
         const float outline = 0.14f;
         float y = landingLevel * field.CellSize + 0.02f;
         float half = field.CellSize * 0.5f;
+        float fillHalf = half * Mathf.Lerp(0.15f, 1f, progress);
         var cellSet = new HashSet<Vector2Int>(cells);
-        Color shadow = new Color(0f, 0f, 0f, 0.45f);
+        Color shadow = new Color(0f, 0f, 0f, Mathf.Lerp(0.25f, 0.6f, progress));
         Color red = new Color(1f, 0f, 0f, 1f);
 
         var verts = new List<Vector3>();
@@ -219,11 +245,14 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
         {
             Vector3 p = field.CellToWorld(c);
             p.y = y;
+
+            AddQuad(p + new Vector3(-fillHalf, 0f, -fillHalf), p + new Vector3(-fillHalf, 0f, fillHalf),
+                p + new Vector3(fillHalf, 0f, fillHalf), p + new Vector3(fillHalf, 0f, -fillHalf), shadow, 0f);
+
             Vector3 bl = p + new Vector3(-half, 0f, -half);
             Vector3 tl = p + new Vector3(-half, 0f, half);
             Vector3 tr = p + new Vector3(half, 0f, half);
             Vector3 br = p + new Vector3(half, 0f, -half);
-            AddQuad(bl, tl, tr, br, shadow, 0f);
 
             // 이웃 칸이 블록에 없으면 그 변이 외곽선
             if (!cellSet.Contains(c + Vector2Int.left))
@@ -236,18 +265,10 @@ public class FallingBlock : MonoBehaviour, IFallingHazard
                 AddQuad(bl, bl + Vector3.forward * outline, br + Vector3.forward * outline, br, red, 0.005f);
         }
 
-        var mesh = new Mesh { name = "LandingMarker" };
-        mesh.SetVertices(verts);
-        mesh.SetColors(colors);
-        mesh.SetTriangles(tris, 0);
-        mesh.RecalculateNormals();
-
-        marker = new GameObject("LandingMarker");
-        marker.AddComponent<MeshFilter>().sharedMesh = mesh;
-        var mr = marker.AddComponent<MeshRenderer>();
-        markerMaterial = new Material(markerMaterial);
-        mr.sharedMaterial = markerMaterial;
-        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        mr.receiveShadows = false;
+        markerMesh.Clear();
+        markerMesh.SetVertices(verts);
+        markerMesh.SetColors(colors);
+        markerMesh.SetTriangles(tris, 0);
+        markerMesh.RecalculateNormals();
     }
 }
