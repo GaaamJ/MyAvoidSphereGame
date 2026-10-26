@@ -1,15 +1,21 @@
-# MyAvoidSphereGame
+# StackClimb
 
-하늘에서 떨어지는 공을 피하는 Unity 프로토타입.
-Claude Code + Unity MCP로 AI와 같이 만들어 봤다.
+떨어지는 테트리미노 블록을 피하면서, 쌓인 블록을 밟고 최대한 높이 올라가는 Unity 프로토타입.
+Claude Code + Unity MCP로 AI와 같이 만들어 봤다. 처음엔 공 피하기 게임이었다.
 
-![플레이 화면](docs/images/03-sphere-falling.png)
+![플레이 화면](docs/images/09-climbed-height.png)
 
-## 게임
+## 조작
 
-- WASD로 캡슐 이동
-- 3초마다 공중에서 공이 떨어짐
-- 맞으면 Game Over, 좌상단 생존시간이 멈춤
+- WASD 이동, Space 점프 (한 번에 한 칸)
+- Game Over 후 R로 재시작
+
+## 규칙
+
+- 블록이 10×10 칸에 맞춰 떨어지고, 떨어진 자리에 그대로 쌓인다
+- 떨어질 자리는 빨간 외곽선으로 미리 보여준다
+- 떨어지는 중인 블록에 닿으면 Game Over
+- 좌상단 `Height`가 점수 (지금 서 있는 높이)
 
 ## 실행
 

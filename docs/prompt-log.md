@@ -104,6 +104,20 @@
 - `SphereSpawner` 삭제
 - 자세한 건 [개선 2차](update-2-blocks.md)
 
+## 6. 이름 변경
+
+**프롬프트**
+
+> 이에 따라 프로젝트 이름이랑 관련된 부분도 변경. 대충 적당하게. (맨 마지막 스텝으로)
+
+**Claude가 한 일**
+
+- 이름: `StackClimb` (블록 쌓고 올라가기)
+- GitHub repo 이름 변경 → https://github.com/GaaamJ/StackClimb (옛 주소는 GitHub가 자동으로 넘겨줌)
+- Unity Product Name, README, 문서 목록 소개 변경
+- 위 기록에 나오는 옛 이름(`MyAvoidSphereGame`)은 그때 사실이라 그대로 둠
+- 로컬 폴더 이름은 안 바꿈. Unity가 열려 있는 상태라 바꾸면 에디터, MCP 연결이 다 끊김
+
 ## 중간에 막혔던 것
 
 | 상황 | 원인 | 해결 |
