@@ -3,6 +3,8 @@
 떨어지는 테트리미노 블록을 피하면서, 쌓인 블록을 밟고 최대한 높이 올라가는 Unity 프로토타입입니다.
 Claude Code와 Unity MCP를 이용해 AI와 함께 만들었고, 처음에는 공 피하기 게임이었습니다.
 
+**[브라우저에서 플레이하기](https://gaaamj.github.io/StackClimb/)** (PC 크롬·엣지 권장, 게임 화면을 한 번 클릭한 뒤 조작)
+
 ![플레이 화면](docs/images/09-climbed-height.png)
 
 ## 조작
