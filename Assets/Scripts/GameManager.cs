@@ -57,6 +57,8 @@ public class GameManager : MonoBehaviour
 
         foreach (FallingBlock block in FindObjectsByType<FallingBlock>(FindObjectsSortMode.None))
             block.Spin();
+        foreach (BlockCell cell in FindObjectsByType<BlockCell>(FindObjectsSortMode.None))
+            cell.Spin();
 
         Debug.Log("Game Over");
     }

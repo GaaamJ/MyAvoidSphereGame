@@ -134,17 +134,13 @@ public class BlockSpawner : MonoBehaviour
     float Score(Candidate c, Vector2Int playerCell, bool aimed)
     {
         var cellSet = new HashSet<Vector2Int>(c.cells);
-        int newHeight = c.level + 1;
-
-        // 블록 밑에 생기는 빈 공간. 많을수록 공중에 뜬 부자연스러운 모양
-        int holes = 0;
-        foreach (Vector2Int cell in c.cells)
-            holes += c.level - field.GetHeight(cell);
 
         // 주변보다 2칸 이상 높아지는 변. 많을수록 올라가기 힘든 벽
+        // 밑이 빈 칸은 떨어져서 채우므로, 칸마다 (지금 높이 + 1)이 된다
         int walls = 0;
         foreach (Vector2Int cell in c.cells)
         {
+            int newHeight = field.GetHeight(cell) + 1;
             foreach (Vector2Int dir in Directions)
             {
                 Vector2Int n = cell + dir;
@@ -160,7 +156,7 @@ public class BlockSpawner : MonoBehaviour
             distance = Mathf.Min(distance, Mathf.Max(Mathf.Abs(d.x), Mathf.Abs(d.y)));
         }
 
-        float score = holes * 3f + walls * 1.5f + Random.Range(0f, 2f);
+        float score = walls * 1.5f + Random.Range(0f, 2f);
         if (aimed)
             score += distance * 4f;          // 플레이어 칸에 가까울수록 좋음
         else if (distance < 2)

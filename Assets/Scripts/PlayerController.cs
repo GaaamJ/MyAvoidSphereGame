@@ -129,8 +129,8 @@ public class PlayerController : MonoBehaviour
     {
         if (isDead) return;
 
-        FallingBlock block = collision.collider.GetComponentInParent<FallingBlock>();
-        if (block == null || !block.IsDangerous) return;
+        IFallingHazard hazard = collision.collider.GetComponentInParent<IFallingHazard>();
+        if (hazard == null || !hazard.IsDangerous) return;
 
         isDead = true;
         rb.isKinematic = true;

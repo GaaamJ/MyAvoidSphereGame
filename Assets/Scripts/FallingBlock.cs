@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 테트리미노 블록. 공중에서 잠깐 멈췄다가 떨어지고, 착지하면 지형이 된다.
+// 착지했을 때 밑이 빈 칸이 있으면 칸 단위로 쪼개져서 빈칸을 채운다.
 [RequireComponent(typeof(Rigidbody))]
-public class FallingBlock : MonoBehaviour
+public class FallingBlock : MonoBehaviour, IFallingHazard
 {
     enum State { Warning, Falling, Landed }
 
@@ -27,6 +28,7 @@ public class FallingBlock : MonoBehaviour
     float warnTimer;
     float fallSpeed;
     int landingLevel;
+    int fallingCellCount;
 
     public event Action<FallingBlock> Landed;
 
@@ -127,9 +129,52 @@ public class FallingBlock : MonoBehaviour
     void Land()
     {
         state = State.Landed;
-        field.Occupy(cells, landingLevel);
         DestroyMarker();
-        Landed?.Invoke(this);
+
+        // 칸마다 실제로 멈출 층. 밑이 비어 있으면 landingLevel보다 낮다.
+        int[] cellLevels = new int[cells.Length];
+        bool hasGap = false;
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cellLevels[i] = field.GetHeight(cells[i]);
+            if (cellLevels[i] < landingLevel) hasGap = true;
+            field.OccupyCell(cells[i], cellLevels[i]);
+        }
+
+        if (hasGap)
+            SplitIntoCells(cellLevels);
+        else
+            Landed?.Invoke(this);
+    }
+
+    // 블록을 칸 4개로 바꾸고, 밑이 빈 칸만 떨어뜨린다
+    void SplitIntoCells(int[] cellLevels)
+    {
+        var meshRenderer = GetComponent<MeshRenderer>();
+        Material material = meshRenderer.sharedMaterial;
+        meshRenderer.enabled = false;
+        foreach (Collider c in GetComponents<Collider>())
+            c.enabled = false;
+
+        for (int i = 0; i < cells.Length; i++)
+        {
+            Vector3 pos = field.CellToWorld(cells[i]) + Vector3.up * landY;
+            BlockCell cell = BlockCell.Create(pos, material, field.CellSize);
+
+            float targetY = cellLevels[i] * field.CellSize + field.CellSize * 0.5f;
+            if (targetY < landY - 0.01f)
+            {
+                fallingCellCount++;
+                cell.Drop(targetY, gravity, maxFallSpeed, OnCellSettled);
+            }
+        }
+    }
+
+    void OnCellSettled()
+    {
+        fallingCellCount--;
+        if (fallingCellCount == 0)
+            Landed?.Invoke(this);
     }
 
     void OnDestroy()

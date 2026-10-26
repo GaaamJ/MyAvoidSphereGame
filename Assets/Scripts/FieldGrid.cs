@@ -38,11 +38,11 @@ public class FieldGrid : MonoBehaviour
         return level;
     }
 
-    public void Occupy(Vector2Int[] cells, int level)
+    // 블록 한 칸이 level 층에 놓였다. 빈칸은 채워지므로 칸마다 높이는 쌓인 개수와 같다.
+    public void OccupyCell(Vector2Int cell, int level)
     {
-        foreach (Vector2Int c in cells)
-            if (IsInside(c))
-                heights[c.x, c.y] = Mathf.Max(heights[c.x, c.y], level + 1);
+        if (IsInside(cell))
+            heights[cell.x, cell.y] = Mathf.Max(heights[cell.x, cell.y], level + 1);
     }
 
     // 칸 중심의 월드 좌표 (y는 0)
