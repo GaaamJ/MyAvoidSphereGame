@@ -531,13 +531,18 @@ MonoBehaviour:
   - {fileID: 8812734857880624074, guid: 2b22f5c233f289b489bc638d834f477e, type: 3}
   - {fileID: 1361042829104818515, guid: 5c97def275e960e44acfa6b14daa806e, type: 3}
   markerMaterial: {fileID: 2100000, guid: 6b6bd993a7a75b843bcb796ab7b2b0a3, type: 2}
-  startInterval: 3
-  minInterval: 1.5
+  startInterval: 4
+  minInterval: 2.5
   rampDuration: 90
+  startWaveSize: 3
+  maxWaveSize: 7
+  waveGrowInterval: 20
+  staggerMin: 0.1
+  staggerMax: 0.4
   warnTime: 0.8
   spawnHeightAbove: 9
   candidateCount: 12
-  aimChance: 0.35
+  aimChance: 0.5
 --- !u!4 &550463884
 Transform:
   m_ObjectHideFlags: 0

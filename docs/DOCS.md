@@ -13,5 +13,6 @@ StackClimb 개발 관련 문서. 공 피하기 게임(기본 미션)에서 시�
 1. [개선 1차: 재시작](update-1-restart.md) - Game Over 후 R로 다시 시작
 2. [개선 2차: 블록 쌓고 올라가기](update-2-blocks.md) - 테트리미노 블록, 점프, 높이 점수, 낙하 알고리즘
 3. [개선 3차: 빈칸 채우기](update-3-fill-gaps.md) - 착지한 블록 밑이 비면 칸이 떨어져서 채움
+4. [개선 4차: 웨이브](update-4-waves.md) - 블록 여러 개를 묶어서 떨어뜨리고, 시간이 지나면 늘어남
 
 [← README로](../README.md)

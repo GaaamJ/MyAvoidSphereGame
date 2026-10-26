@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // 블록을 어디에 떨어뜨릴지 정하고 생성한다.
-// 후보 자리를 여러 개 뽑아 점수를 매기고, 가장 자연스러운 자리를 고른다.
+// 여러 개를 한 웨이브로 묶어 조금씩 간격을 두고 떨어뜨린다.
+// 자리는 후보를 여러 개 뽑아 점수를 매기고, 가장 자연스러운 자리를 고른다.
 public class BlockSpawner : MonoBehaviour
 {
     [SerializeField] private FieldGrid field;
@@ -10,13 +12,25 @@ public class BlockSpawner : MonoBehaviour
     [SerializeField] private FallingBlock[] blockPrefabs;
     [SerializeField] private Material markerMaterial;
 
-    [Header("난이도")]
-    [Tooltip("시작 생성 간격 (초)")]
-    [SerializeField] private float startInterval = 3f;
-    [Tooltip("최소 생성 간격 (초)")]
-    [SerializeField] private float minInterval = 1.5f;
+    [Header("웨이브 간격")]
+    [Tooltip("시작 웨이브 간격 (초)")]
+    [SerializeField] private float startInterval = 4f;
+    [Tooltip("최소 웨이브 간격 (초)")]
+    [SerializeField] private float minInterval = 2.5f;
     [Tooltip("최소 간격까지 걸리는 시간 (초)")]
     [SerializeField] private float rampDuration = 90f;
+
+    [Header("웨이브 크기")]
+    [Tooltip("처음 한 웨이브의 블록 수")]
+    [SerializeField] private int startWaveSize = 3;
+    [Tooltip("최대 블록 수")]
+    [SerializeField] private int maxWaveSize = 7;
+    [Tooltip("이 시간(초)마다 블록 수 +1")]
+    [SerializeField] private float waveGrowInterval = 20f;
+    [Tooltip("웨이브 안 블록 사이 최소 간격 (초)")]
+    [SerializeField] private float staggerMin = 0.1f;
+    [Tooltip("웨이브 안 블록 사이 최대 간격 (초)")]
+    [SerializeField] private float staggerMax = 0.4f;
 
     [Header("낙하")]
     [Tooltip("낙하 전 공중에서 멈춰 있는 시간 (초)")]
@@ -27,13 +41,12 @@ public class BlockSpawner : MonoBehaviour
     [Header("자리 고르기")]
     [Tooltip("한 번에 비교할 후보 수")]
     [SerializeField] private int candidateCount = 12;
-    [Tooltip("플레이어를 노리는 블록 비율 (0~1)")]
-    [SerializeField] private float aimChance = 0.35f;
+    [Tooltip("웨이브에 플레이어를 노리는 블록이 1개 섞일 확률 (0~1)")]
+    [SerializeField] private float aimChance = 0.5f;
 
     readonly HashSet<Vector2Int> reserved = new HashSet<Vector2Int>();
     float timer;
     float elapsed;
-    bool lastWasAimed;
 
     struct Candidate
     {
@@ -47,13 +60,13 @@ public class BlockSpawner : MonoBehaviour
 
     void Start()
     {
-        // 첫 블록은 조금 빨리
+        // 첫 웨이브는 조금 빨리
         timer = startInterval * 0.5f;
     }
 
     void Update()
     {
-        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
+        if (IsGameOver) return;
 
         elapsed += Time.deltaTime;
         timer += Time.deltaTime;
@@ -62,17 +75,33 @@ public class BlockSpawner : MonoBehaviour
         if (timer >= interval)
         {
             timer -= interval;
-            Spawn();
+            StartCoroutine(SpawnWave());
         }
     }
 
-    void Spawn()
+    bool IsGameOver => GameManager.Instance != null && GameManager.Instance.IsGameOver;
+
+    IEnumerator SpawnWave()
+    {
+        int size = Mathf.Min(maxWaveSize, startWaveSize + Mathf.FloorToInt(elapsed / waveGrowInterval));
+
+        // 노리는 블록은 웨이브당 최대 1개, 웨이브 안 아무 순서에나 섞는다
+        int aimedIndex = Random.value < aimChance ? Random.Range(0, size) : -1;
+
+        for (int i = 0; i < size; i++)
+        {
+            if (IsGameOver) yield break;
+
+            Spawn(i == aimedIndex);
+            if (i < size - 1)
+                yield return new WaitForSeconds(Random.Range(staggerMin, staggerMax));
+        }
+    }
+
+    void Spawn(bool aimed)
     {
         Vector2Int playerCell = field.WorldToCell(player.position);
         int playerLevel = Mathf.Max(0, Mathf.RoundToInt(player.position.y - 1f));
-
-        // 연속으로 노리지 않는다
-        bool aimed = !lastWasAimed && Random.value < aimChance;
 
         Candidate best = default;
         bool found = false;
@@ -89,8 +118,6 @@ public class BlockSpawner : MonoBehaviour
             }
         }
         if (!found) return;
-
-        lastWasAimed = aimed;
 
         float spawnY = Mathf.Max(best.level, player.position.y) + spawnHeightAbove;
         // 원점에 생겼다가 옮겨지면 그 한 프레임에 플레이어와 부딪힐 수 있어서 처음부터 공중에 만든다
